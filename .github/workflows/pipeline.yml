@@ -15,24 +15,25 @@ jobs:
     - name: Login Docker Hub
       run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+    - name: Build Docker image
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/kubefoods-backend:latest .
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v6
-      with:
-        context: .
-        push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/kubefoods-backend:latest
-        platforms: linux/amd64
+    - name: Push image
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/kubefoods-backend:latest
 
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
+    # --- CREAR CLUSTER KUBERNETES ----
+    - name: Install kind
+      uses: helm/kind-action@v1.8.0
 
+    - name: Check cluster
+      run: kubectl get nodes
+
+    # --- DESPLIEGUE ----
     - name: Apply manifests
       run: |
         kubectl apply -f deployment.yaml
         kubectl apply -f service.yaml
 
+    # --- VALIDACIÓN ----
     - name: Validate deployment
       run: bash scripts/validate.sh

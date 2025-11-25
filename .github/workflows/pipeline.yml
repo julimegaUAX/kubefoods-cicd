@@ -15,12 +15,18 @@ jobs:
     - name: Login Docker Hub
       run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-    - name: Build and Push Docker image
-      run: |
-        docker buildx create --use
-        docker buildx build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/kubefoods-backend:latest --push .
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-    - name: Setup kubectl
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/kubefoods-backend:latest
+        platforms: linux/amd64
+
+    - name: Set up kubectl
       uses: azure/setup-kubectl@v3
 
     - name: Apply manifests

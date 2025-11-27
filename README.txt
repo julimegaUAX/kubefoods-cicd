@@ -23,6 +23,6 @@ kubefoods-cicd/
 El pipeline implementa un mecanismo de auto-recuperación mediante health checks post-despliegue que monitoriza el estado de los pods y la disponibilidad del servicio; cuando detecta estados críticos como ImagePullBackOff, CrashLoopBackOff o timeout en los endpoints, ejecuta automáticamente un rollout undo para revertir a la revisión estable anterior, asegurando zero-downtime y manteniendo el SLA durante actualizaciones problemáticas.
 
 
-El proyecto me tomó mucho tiempo por lo que no hice fotos al final. Sin embargo, el proceso se puede ir viendo en las versiones del repositorio.
+El proyecto nos tomó mucho tiempo por lo que no hice fotos al final. Sin embargo, el proceso se puede ir viendo en las versiones del repositorio.
 
 Alguna reflexión puede ser que si que hay una curva de aprendizaje notable a la hora de utilizar estos programas.

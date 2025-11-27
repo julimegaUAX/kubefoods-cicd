@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: julimega/kubefoods-backend:latest
+        image: julimega/kubefoods-backend:version-que-no-existe  # ← IMAGEN INEXISTENTE
         ports:
         - containerPort: 80

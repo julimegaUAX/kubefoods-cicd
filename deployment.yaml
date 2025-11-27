@@ -16,6 +16,18 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: julimega/kubefoods-backend:version-que-no-existe  # ← IMAGEN INEXISTENTE
+        image: julimega/kubefoods-backend:latest  # ← IMAGEN CORRECTA
         ports:
         - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /health.html
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health.html
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5

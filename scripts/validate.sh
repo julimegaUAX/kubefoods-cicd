@@ -16,7 +16,8 @@ execute_rollback() {
     # Solo intentar rollback si hay revisiones anteriores
     REVISION_COUNT=$(kubectl rollout history deployment/kubefoods-backend 2>/dev/null | grep -c "revision" || echo "0")
     
-    if [ "$REVISION_COUNT" -gt 1 ]; then
+    # Convertir a número y verificar
+    if [[ "$REVISION_COUNT" =~ ^[0-9]+$ ]] && [ "$REVISION_COUNT" -gt 1 ]; then
         echo "🔄 Ejecutando rollback automático..."
         kubectl rollout undo deployment/kubefoods-backend
         echo "✅ Rollback completado"
@@ -26,9 +27,10 @@ execute_rollback() {
         kubectl rollout status deployment/kubefoods-backend --timeout=120s
         echo "🎯 Rollback ejecutado exitosamente"
     else
-        echo "⚠️  No hay revisiones anteriores para hacer rollback"
+        echo "⚠️  No hay revisiones anteriores para hacer rollback (solo hay 1 revisión)"
         echo "🔧 Eliminando deployment fallido..."
         kubectl delete deployment kubefoods-backend --ignore-not-found=true
+        echo "✅ Deployment fallido eliminado"
     fi
 }
 

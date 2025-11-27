@@ -39,10 +39,16 @@ jobs:
         kubectl apply -f deployment.yaml
         kubectl apply -f service.yaml
 
-    - name: Wait for deployment to be ready
+    - name: Wait for deployment with timeout handling
       run: |
-        kubectl wait --for=condition=available --timeout=120s deployment/kubefoods-backend
-        sleep 10  # Espera adicional para asegurar que esté completamente listo
+        # Intenta esperar, pero si falla continúa para que valide.sh haga el rollback
+        timeout 120s kubectl wait --for=condition=available deployment/kubefoods-backend || echo "Wait timed out, proceeding to validation..."
 
-    - name: Validate deployment
+    - name: Validate deployment and rollback if needed
       run: bash scripts/validate.sh
+
+    - name: Force cleanup if validation failed
+      if: failure()
+      run: |
+        echo "Cleaning up failed deployment..."
+        kubectl delete deployment kubefoods-backend --ignore-not-found=true

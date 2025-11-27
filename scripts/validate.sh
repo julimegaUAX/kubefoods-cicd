@@ -7,6 +7,31 @@ PORT=30080
 MAX_RETRIES=15
 RETRY_COUNT=0
 
+# Definir la función de rollback primero
+execute_rollback() {
+    echo ""
+    echo "📋 Historial de revisiones antes del rollback:"
+    kubectl rollout history deployment/kubefoods-backend
+    
+    # Solo intentar rollback si hay revisiones anteriores
+    REVISION_COUNT=$(kubectl rollout history deployment/kubefoods-backend 2>/dev/null | grep -c "revision" || echo "0")
+    
+    if [ "$REVISION_COUNT" -gt 1 ]; then
+        echo "🔄 Ejecutando rollback automático..."
+        kubectl rollout undo deployment/kubefoods-backend
+        echo "✅ Rollback completado"
+        
+        echo ""
+        echo "📊 Estado después del rollback:"
+        kubectl rollout status deployment/kubefoods-backend --timeout=120s
+        echo "🎯 Rollback ejecutado exitosamente"
+    else
+        echo "⚠️  No hay revisiones anteriores para hacer rollback"
+        echo "🔧 Eliminando deployment fallido..."
+        kubectl delete deployment kubefoods-backend --ignore-not-found=true
+    fi
+}
+
 echo "=== Iniciando validación del despliegue ==="
 echo "Service IP: $SERVICE_IP"
 echo "Port: $PORT"
@@ -65,30 +90,6 @@ done
 
 echo ""
 echo "🚨 FALLO CRÍTICO - No se pudo conectar después de $MAX_RETRIES intentos"
-
-execute_rollback() {
-    echo ""
-    echo "📋 Historial de revisiones antes del rollback:"
-    kubectl rollout history deployment/kubefoods-backend
-    
-    # Solo intentar rollback si hay revisiones anteriores
-    REVISION_COUNT=$(kubectl rollout history deployment/kubefoods-backend 2>/dev/null | grep -c "revision" || echo "0")
-    
-    if [ "$REVISION_COUNT" -gt 1 ]; then
-        echo "🔄 Ejecutando rollback automático..."
-        kubectl rollout undo deployment/kubefoods-backend
-        echo "✅ Rollback completado"
-        
-        echo ""
-        echo "📊 Estado después del rollback:"
-        kubectl rollout status deployment/kubefoods-backend --timeout=120s
-        echo "🎯 Rollback ejecutado exitosamente"
-    else
-        echo "⚠️  No hay revisiones anteriores para hacer rollback"
-        echo "🔧 Eliminando deployment fallido..."
-        kubectl delete deployment kubefoods-backend --ignore-not-found=true
-    fi
-}
 
 # Ejecutar rollback
 execute_rollback
